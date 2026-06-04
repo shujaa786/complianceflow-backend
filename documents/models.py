@@ -1,35 +1,26 @@
-from django.db import models
 from django.conf import settings
+from django.db import models
+
+from .constants import (
+    DOCUMENT_STATUS_CHOICES,
+    DOCUMENT_TYPE_CHOICES,
+    STATUS_PENDING,
+)
 
 
 class Document(models.Model):
-
-    STATUS_CHOICES = (
-        ("pending", "Pending"),
-        ("approved", "Approved"),
-        ("rejected", "Rejected"),
-        ("archived", "Archived"),
-    )
-
-    DOCUMENT_TYPES = (
-        ("invoice", "Invoice"),
-        ("contract", "Contract"),
-        ("tax", "Tax Document"),
-        ("employee", "Employee Document"),
-        ("compliance", "Compliance File"),
-    )
 
     title = models.CharField(max_length=255)
 
     document_type = models.CharField(
         max_length=50,
-        choices=DOCUMENT_TYPES,
+        choices=DOCUMENT_TYPE_CHOICES,
     )
 
     status = models.CharField(
         max_length=20,
-        choices=STATUS_CHOICES,
-        default="pending"
+        choices=DOCUMENT_STATUS_CHOICES,
+        default=STATUS_PENDING,
     )
 
     file = models.FileField(

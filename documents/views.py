@@ -1,42 +1,32 @@
-from rest_framework import generics
+from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import SearchFilter, OrderingFilter
 
-from .models import Document
-from .serializers import DocumentSerializer
+from .serializers import (
+    DocumentCreateSerializer,
+    DocumentDetailSerializer,
+    DocumentListSerializer,
+)
+from .services.document_service import create_document, get_document_queryset
 
 
-class DocumentListCreateView(generics.ListCreateAPIView):
-
-    serializer_class = DocumentSerializer
+class DocumentViewSet(viewsets.ModelViewSet):
+    queryset = get_document_queryset()
     permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_fields = ["status", "document_type", "department"]
+    search_fields = ["title", "description"]
+    ordering_fields = ["uploaded_at", "updated_at", "title"]
+    ordering = ["-uploaded_at"]
 
-    def get_queryset(self):
-
-        queryset = Document.objects.all().order_by("-uploaded_at")
-
-        status_param = self.request.query_params.get("status")
-        doc_type = self.request.query_params.get("document_type")
-
-        if status_param:
-            queryset = queryset.filter(status=status_param)
-
-        if doc_type:
-            queryset = queryset.filter(document_type=doc_type)
-
-        return queryset
+    def get_serializer_class(self):
+        if self.action == "list":
+            return DocumentListSerializer
+        if self.action == "create":
+            return DocumentCreateSerializer
+        return DocumentDetailSerializer
 
     def perform_create(self, serializer):
-
-        serializer.save(
-            uploaded_by=self.request.user,
-            department=self.request.user.department
-        )
-
-
-class DocumentDetailView(generics.RetrieveAPIView):
-
-    queryset = Document.objects.all()
-
-    serializer_class = DocumentSerializer
-
-    permission_classes = [IsAuthenticated]
+        document = create_document(serializer.validated_data, self.request.user)
+        serializer.instance = document

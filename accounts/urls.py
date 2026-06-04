@@ -7,6 +7,7 @@ from rest_framework_simplejwt.views import (
 
 from .views import ProfileView
 
+app_name = "accounts"
 
 urlpatterns = [
     path("login/", TokenObtainPairView.as_view(), name="login"),

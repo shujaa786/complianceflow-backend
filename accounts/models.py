@@ -1,6 +1,8 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
+from .constants import ROLE_CHOICES, ROLE_VIEWER
+
 
 class Department(models.Model):
     name = models.CharField(max_length=100, unique=True)
@@ -11,17 +13,10 @@ class Department(models.Model):
 
 class User(AbstractUser):
 
-    ROLE_CHOICES = (
-        ("admin", "Admin"),
-        ("manager", "Manager"),
-        ("approver", "Approver"),
-        ("viewer", "Viewer"),
-    )
-
     role = models.CharField(
         max_length=20,
         choices=ROLE_CHOICES,
-        default="viewer"
+        default=ROLE_VIEWER,
     )
 
     department = models.ForeignKey(
